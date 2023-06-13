@@ -19,7 +19,6 @@ hidden_dim        =  128
 
 data_dir          = '/data/'
 log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ResNet_logs') + '/'
-log_dir           = "/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/"
 
 max_sequence_length = 528
 

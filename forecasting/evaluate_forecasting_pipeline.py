@@ -146,15 +146,16 @@ if __name__ == '__main__':
     parser.add_argument('--startbatch', default=0, type=int)
     args = parser.parse_args()
 
-    # Path to validation set indices
-    validation_path = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/lightning_logs/version_6/validation_indices.txt'
+    # Path to validation set dataset indices
+    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
+    validation_path = conv_log_dir + 'lightning_logs/version_8/validation_indices.txt'
     
     # Path to ConvLSTM model
-    convlstm_checkpoint_path = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/lightning_logs/version_8/checkpoints/epoch=244-step=114450.ckpt'
+    convlstm_checkpoint_path = conv_log_dir + 'lightning_logs/version_8/checkpoints/epoch=244-step=114450.ckpt'
     
     # Path to ResNet regression model
-    resnet_checkpoint_path = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ResnetReg2/lightning_logs/version_14/checkpoints/epoch=34-step=38115.ckpt'
-    logdir = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/lightning_logs/version_8/forecast_plots_aug_resnet/14/'
-    
+    resnet_checkpoint_path = log_dir + 'lightning_logs/version_14/checkpoints/epoch=34-step=38115.ckpt'
+
+    logdir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'Pipeline_logs' / 'forecast_plots') + '/'    
     run_evaluation(validation_path, convlstm_checkpoint_path, resnet_checkpoint_path, logdir, args.startbatch)
 

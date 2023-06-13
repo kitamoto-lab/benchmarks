@@ -153,7 +153,6 @@ def run_trainer():
                                 downsample_size=downsample_size)
 
     model = LightningConvLSTM()
-    model = LightningConvLSTM.load_from_checkpoint(convlstm_checkpoint_path)
 
     checkpoint_callback = ModelCheckpoint(monitor='total_val_loss', mode='min', every_n_epochs=5, save_top_k=-1)
 

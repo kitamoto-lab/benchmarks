@@ -25,12 +25,14 @@ from evaluation.predict import predict, read_validation_indices
 # Flag for if the ConvLSTM output images should be used in training
 use_predicted = True  
 # use_predicted = False  
-loadded_convlstm_model = None
+loaded_convlstm_model = None
 if use_predicted:  
-    convlstm_checkpoint_path = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/lightning_logs/version_8/checkpoints/epoch=244-step=114450.ckpt'
+    # Path to ConvLSTM model
+    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
+    convlstm_checkpoint_path = conv_log_dir + 'lightning_logs/version_8/checkpoints/epoch=244-step=114450.ckpt'
     convLSTMmodel = LightningConvLSTM.load_from_checkpoint(convlstm_checkpoint_path)
     convLSTMmodel.eval()
-    loadded_convlstm_model = convLSTMmodel
+    loaded_convlstm_model = convLSTMmodel
 
 
 class LightningResnetReg2(pl.LightningModule):
@@ -73,7 +75,7 @@ class LightningResnetReg2(pl.LightningModule):
 
     def _common_step(self, batch):
         if self.use_predicted:
-            images, labels = self.produce_predicted_batch_from_img_batch(batch, loadded_convlstm_model)
+            images, labels = self.produce_predicted_batch_from_img_batch(batch, loaded_convlstm_model)
         else:
             images, labels = batch
             batch_size, time, channels, height, width = images.size()
@@ -160,7 +162,9 @@ def run_trainer(validation_path, logdir):
 
 
 if __name__ == '__main__':
-    validation_path = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ConvLSTM2_forecasting_logs/lightning_logs/version_6/validation_indices.txt'
-    logdir = '/DigitalTyphoonModels/FrameClassification/ResNet/lightning_logs/ResnetReg2/'
-    run_trainer(validation_path, logdir)
+    # Path to validation set dataset indices
+    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
+    validation_path = conv_log_dir + 'lightning_logs/version_8/validation_indices.txt'
+    
+    run_trainer(validation_path, log_dir)
 
