@@ -18,7 +18,7 @@ PAD_token         = 4
 accelerator       = 'gpu' if torch.cuda.is_available() else 'cpu'
 hidden_dim        =  128
 
-data_dir          = '/data/'
+data_dir          = '/data/typhoon/WP/'
 
 log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
 

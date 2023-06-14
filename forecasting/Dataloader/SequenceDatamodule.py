@@ -42,6 +42,7 @@ class TyphoonDataModule(pl.LightningDataModule):
         self.images_path = str(data_path / 'image') + '/'
         self.track_path = str(data_path / 'metadata') + '/'
         self.metadata_path = str(data_path / 'metadata.json')
+
         self.load_data = load_data
         self.split_by = split_by
 
@@ -74,8 +75,8 @@ class TyphoonDataModule(pl.LightningDataModule):
                                         transform_func=self.transform_func,
                                         transform=self.transform, 
                                         spectrum='Infrared',
-                                        verbose=False)
-
+                                        verbose=False)        
+                                        
         self.train_set, self.val_set, _ = self.dataset.random_split(self.dataset_split, split_by=self.split_by)
         print('Pre-fix Train set size val set size: ', len(self.train_set), len(self.val_set))
 

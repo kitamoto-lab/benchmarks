@@ -22,6 +22,34 @@ To run the classification code (only available for wind label for now)
 python3 train.py --model_name vgg --size 224 --cropped True --device 0
 ```
 
-
 ### Forecasting
 
+To train and run the pipeline, two models must be trained: 
+
+1. First, the convolutional LSTM.
+
+2. Then, using the trained convLSTM, the ResNET.
+
+Instructions to train the convLSTM are as follows (commands must be run in the Docker container built using the Dockerfile contained in the repository):
+
+1. Enter the directory ```forecasting```
+
+2. Run 
+```
+python3 train_convLSTM.py
+```
+
+3. Logs will be saved into the directory ```forecasting/ConvLSTM_logs/lightning_logs``` under the respective version. This is where weights are saved as well as the indices used for validation.
+
+Instructions to train the ResNet are as follows:
+
+1. Enter the directory ```forecasting```
+
+2. Two paths must be set in the ```train_resnet.py``` file. On line 32, the path to the convLSTM saved model must be specified. Similarly, on line 168, the path to the file specifying what indices are validation indices must be specified.
+
+3. Run 
+```
+python3 train_resnet.py
+```
+
+Instructions to evaluate the pipeline and produce RMSE, difference statistics as well as plots are as follows:

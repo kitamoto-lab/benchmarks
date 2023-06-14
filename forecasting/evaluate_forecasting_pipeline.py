@@ -147,7 +147,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Path to validation set dataset indices
-    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
     validation_path = conv_log_dir + 'lightning_logs/version_8/validation_indices.txt'
     
     # Path to ConvLSTM model

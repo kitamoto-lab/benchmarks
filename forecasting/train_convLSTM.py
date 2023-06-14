@@ -154,14 +154,14 @@ def run_trainer():
 
     model = LightningConvLSTM()
 
-    checkpoint_callback = ModelCheckpoint(monitor='total_val_loss', mode='min', every_n_epochs=5, save_top_k=-1)
+    checkpoint_callback = ModelCheckpoint(monitor='total_val_loss', mode='min', every_n_epochs=1, save_top_k=-1)
 
     trainer = Trainer(max_epochs=max_epochs,
                       accelerator=accelerator,
                       default_root_dir=log_dir, 
                       callbacks=[checkpoint_callback])
 
-    trainer.fit(model, data_module, ckpt_path=convlstm_checkpoint_path)
+    trainer.fit(model, data_module)
 
 
 if __name__ == '__main__':

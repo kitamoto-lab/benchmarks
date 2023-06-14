@@ -1,5 +1,7 @@
+import os
 import numpy as np
 import torch
+from pathlib import Path
 
 # Hyperparameters
 learning_rate     = 0.0001
@@ -17,7 +19,8 @@ accelerator       = 'gpu' if torch.cuda.is_available() else 'cpu'
 hidden_dim        =  128
 
 
-data_dir          = '/data/'
+data_dir          = '/data/typhoon/WP'
+conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
 log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ResNet_logs') + '/'
 
 max_sequence_length = 528

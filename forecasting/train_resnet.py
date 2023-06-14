@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 import torch
 import torchvision
@@ -28,8 +29,7 @@ use_predicted = True
 loaded_convlstm_model = None
 if use_predicted:  
     # Path to ConvLSTM model
-    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
-    convlstm_checkpoint_path = conv_log_dir + 'lightning_logs/version_8/checkpoints/epoch=244-step=114450.ckpt'
+    convlstm_checkpoint_path = conv_log_dir + 'lightning_logs/version_12/checkpoints/epoch=0-step=870.ckpt'
     convLSTMmodel = LightningConvLSTM.load_from_checkpoint(convlstm_checkpoint_path)
     convLSTMmodel.eval()
     loaded_convlstm_model = convLSTMmodel
@@ -95,9 +95,9 @@ class LightningResnetReg2(pl.LightningModule):
         label_list = torch.reshape(labels, (batch_size, labels.size()[1]))
 
         with torch.no_grad():
-            img_seq = images[:,i:i+prediction_start_hour+1]
-            predicted_images = predict(model, img_seq, min(prediction_start_hour, time-(i+prediction_start_hour+1)))
-            expected_labels = labels[:,i+prediction_start_hour+1:]
+            img_seq = images[:,:prediction_start_hour+1]
+            predicted_images = predict(model, img_seq, min(prediction_start_hour, time-(prediction_start_hour+1)))
+            expected_labels = labels[:,prediction_start_hour+1:]
             predicted_images = predicted_images.reshape([-1, channels, height, width])
             image_list = torch.concat((image_list, predicted_images), dim=0)
             label_list = torch.concat((label_list, expected_labels), dim=1)
@@ -157,14 +157,15 @@ def run_trainer(validation_path, logdir):
                       default_root_dir=logdir, 
                       callbacks=[checkpoint_callback],
                       num_sanity_val_steps=0)
+    
+    # trainer.validate(model=resnet_model, dataloaders=data_module)
 
     trainer.fit(resnet_model, data_module)
 
 
 if __name__ == '__main__':
     # Path to validation set dataset indices
-    conv_log_dir = str(Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / 'ConvLSTM_logs') + '/'
-    validation_path = conv_log_dir + 'lightning_logs/version_8/validation_indices.txt'
+    validation_path = conv_log_dir + 'lightning_logs/version_12/validation_indices.txt'
     
     run_trainer(validation_path, log_dir)
 
