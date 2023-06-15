@@ -43,6 +43,8 @@ To train and run the pipeline, two models must be trained:
 
 2. Then, using the trained convLSTM, the ResNET.
 
+#### ConvLSTM
+
 Instructions to train the convLSTM are as follows:
 
 1. Enter the directory ```forecasting```
@@ -53,6 +55,8 @@ python3 train_convLSTM.py
 ```
 
 3. Logs and checkpoints will be saved to ```ConvLSTM_logs/lightning_logs/version_[i]```. This is where validation indices are also saved in ```validation_indices.txt```
+
+#### Pressure Regression ResNet
 
 Instructions to train the ResNet are as follows:
 
@@ -67,6 +71,7 @@ python3 train_resnet.py
 
 4. Logs and checkpoints will be saved to ```ResNet_logs/lightning_logs/version_[i]```. 
 
+#### Evaluation
 
 Instructions to evaluate the pipeline and produce RMSE, difference statistics as well as plots are as follows:
 
