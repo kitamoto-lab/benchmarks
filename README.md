@@ -24,13 +24,26 @@ python3 train.py --model_name vgg --size 224 --cropped True --device 0
 
 ### Forecasting
 
+#### Docker
+All of the below commands should be run in a Docker container built using the Dockerfile in the repo, with the data and repo being exposed as volumes in the container. 
+
+To build:
+
+```docker build  -t benchmarks_img .```
+
+To run an interactive shell:
+
+```docker run -it --shm-size=2G --gpus all -v /path/to/neurips2023-benchmarks:/neurips2023-benchmarks -v /path/to/datasets/:/data benchmarks_img```
+
+Ensure that when running the following commands, the appropriate path to ```WP/``` is specified in the ```hyperparameters.py``` files in ```ConvLSTM/``` and ```ResNet/``` in the variable ```data_dir```.
+
 To train and run the pipeline, two models must be trained: 
 
 1. First, the convolutional LSTM.
 
 2. Then, using the trained convLSTM, the ResNET.
 
-Instructions to train the convLSTM are as follows (commands must be run in the Docker container built using the Dockerfile contained in the repository):
+Instructions to train the convLSTM are as follows:
 
 1. Enter the directory ```forecasting```
 
