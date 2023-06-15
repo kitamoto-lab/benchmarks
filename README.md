@@ -39,7 +39,7 @@ Instructions to train the convLSTM are as follows (commands must be run in the D
 python3 train_convLSTM.py
 ```
 
-3. Logs will be saved into the directory ```forecasting/ConvLSTM_logs/lightning_logs``` under the respective version. This is where weights are saved as well as the indices used for validation.
+3. Logs and checkpoints will be saved to ```ConvLSTM_logs/lightning_logs/version_[i]```. This is where validation indices are also saved in ```validation_indices.txt```
 
 Instructions to train the ResNet are as follows:
 
@@ -52,4 +52,18 @@ Instructions to train the ResNet are as follows:
 python3 train_resnet.py
 ```
 
+4. Logs and checkpoints will be saved to ```ResNet_logs/lightning_logs/version_[i]```. 
+
+
 Instructions to evaluate the pipeline and produce RMSE, difference statistics as well as plots are as follows:
+
+1. Enter the directory ```forecasting```
+
+2. Three paths must be set in ```evaluate_forecasting_pipeline.py```. On line 150, set the path to the dataset indices used as validation indices during the convLSTM training. on Line 153, set the path to the convLSTM model weights. On line 156, set the path to the ResNet model weights.
+
+3. Run 
+```
+python3 evaluate_foreacsting_pipeline.py
+```
+
+4. When the execution ends, it will print out statistics for absolute difference, percentage difference, and RMSE. Plots showing the expected and forecasted pressure will be saved into the directory ```Pipeline_logs/forecast_plots/```.
