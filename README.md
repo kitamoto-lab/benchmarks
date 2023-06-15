@@ -81,7 +81,7 @@ Instructions to evaluate the pipeline and produce RMSE, difference statistics as
 
 3. Run 
 ```
-python3 evaluate_foreacsting_pipeline.py
+python3 evaluate_forecasting_pipeline.py
 ```
 
 4. When the execution ends, it will print out statistics for absolute difference, percentage difference, and RMSE. Plots showing the expected and forecasted pressure will be saved into the directory ```Pipeline_logs/forecast_plots/```.
