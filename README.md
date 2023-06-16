@@ -15,7 +15,6 @@ To run the regression code :
 ```python
 python3 train.py --model_name resnet18 --labels wind --size 224 --cropped True --device 0
 ```
-all the parameters will 
 
 To run the classification code (only available for wind label for now)
 ```python
