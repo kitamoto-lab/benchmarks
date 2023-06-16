@@ -90,7 +90,7 @@ python3 evaluate_forecasting_pipeline.py
 Every command should be run in the reanalysis folder. The path to this folder and to the data should be provided in the config.py file.
 
 #### Create buckets
-First, you have to split and save the dataset into 3 buckets according to the type of splitting refered in the config.py file ('standard' for standard splitting between before 2005 / between 2005 and 2015 / after 2015, 'same_size' for the same splitting but with a equal number of sequences per bucket) 
+First, you have to split and save the dataset into 3 buckets according to the type of splitting refered in the config.py file ('standard' for standard splitting between before 2005 / between 2005 and 2015 / after 2015, 'same_size' for the same splitting but with a equal number of sequences per bucket).
 ```
 python3 createdataset.py
 ```
