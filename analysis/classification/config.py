@@ -18,5 +18,5 @@ NUM_CLASSES       = 5
 # Computation
 ACCELERATOR       = 'gpu' if torch.cuda.is_available() else 'cpu'
 DEVICES           = [0]
-DATA_DIR          = '/dataset/'
+DATA_DIR          = '/dataset/typhoon/WP/'
 LOG_DIR           = "/DigitalTyphoonModels/FrameClassification/Alexnet/lightning/"
