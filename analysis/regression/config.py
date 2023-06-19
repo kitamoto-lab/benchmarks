@@ -6,7 +6,6 @@ BATCH_SIZE        = 16
 NUM_WORKERS       = 24
 MAX_EPOCHS        = 50
 
-
 # Dataset parameters
 WEIGHTS           = None
 LABELS            = 'wind' # Overwritten if labels argument is given
@@ -21,4 +20,3 @@ NUM_CLASSES       = 1
 ACCELERATOR       = 'gpu' if torch.cuda.is_available() else 'cpu'
 DEVICES           = 0 # Overwritten if device argument is given
 DATA_DIR          = '/dataset/typhoon/WP/'
-LOG_DIR           = "/app/digtyp/FrameClassification/Comparison/tb_logs"

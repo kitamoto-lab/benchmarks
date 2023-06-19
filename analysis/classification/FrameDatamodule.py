@@ -11,17 +11,18 @@ from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
 
 
 class TyphoonDataModule(pl.LightningDataModule):
+    """Typhoon Dataset Module using lightning architecture"""
     def __init__(
         self,
         dataroot,
         batch_size,
         num_workers,
-        split_by="sequence",
-        load_data=False,
-        dataset_split=(0.8, 0.1, 0.1),
-        standardize_range=(170, 300),
-        downsample_size=(224, 224),
-        cropped=False,
+        split_by,
+        load_data,
+        dataset_split,
+        standardize_range,
+        downsample_size,
+        cropped,
         corruption_ceiling_pct=100,
     ):
         super().__init__()
@@ -82,7 +83,7 @@ class TyphoonDataModule(pl.LightningDataModule):
             (image.grade() < 7)
             and (image.year() != 2023)
             and (100.0 <= image.long() <= 180.0)
-        )  # and (image.mask_1_percent() <  self.corruption_ceiling_pct))
+        )
 
     def transform_func(self, image_batch):
         image_batch = np.clip(

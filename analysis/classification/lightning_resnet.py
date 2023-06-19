@@ -34,11 +34,10 @@ class LightningResnet(pl.LightningModule):
         )
         self.accuracy = Accuracy(task="multiclass", num_classes=num_classes)
         self.compute_cm = ConfusionMatrix(task="multiclass", num_classes=num_classes)
-        self.cm = torch.zeros(5,5)
 
         # Collected statistics
-        self.predicted_labels = []
         self.truth_labels = []
+        self.predicted_labels = []
 
     def forward(self, images):
         images = torch.Tensor(images).float()

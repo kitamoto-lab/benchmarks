@@ -33,8 +33,8 @@ class LightningVit(pl.LightningModule):
         self.compute_cm = ConfusionMatrix(task="multiclass", num_classes=num_classes)
 
         # Collected statistics
-        self.predicted_labels = []
         self.truth_labels = []
+        self.predicted_labels = []
 
     def forward(self, images):
         images = torch.Tensor(images).float()

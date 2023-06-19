@@ -13,13 +13,13 @@ class LightningResnetReg(pl.LightningModule):
 
         if model_name == "resnet18" : 
             self.model = resnet18(weights=weights, num_classes=num_classes)
-            self.model.fc = nn.Linear(in_features=512, out_features=1, bias=True)
+            self.model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
         if model_name == "resnet50" : 
             self.model = resnet50(weights=weights, num_classes=num_classes)
-            self.model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
+            self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
@@ -31,7 +31,6 @@ class LightningResnetReg(pl.LightningModule):
 
         self.truth_labels = []
         self.predicted_labels = []
-
 
     def forward(self, images):
         images = torch.Tensor(images).float()

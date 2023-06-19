@@ -33,7 +33,6 @@ def custom_parse_args(args):
         print(args_parsing)
         raise ValueError("Some arguments are not initialized correctly")
     
-
     if args.size == '512' or args.size == 512:
         args.size = (512,512)
     elif args.size == '224'  or args.size == 224:
@@ -82,7 +81,6 @@ def train(hparam):
         'ACCELERATOR': config.ACCELERATOR, 
         'DEVICES': hparam.device, 
         'DATA_DIR': config.DATA_DIR, 
-        'LOG_DIR': config.LOG_DIR,
         'MODEL_NAME': hparam.model_name,
         })
 
@@ -131,13 +129,12 @@ def train(hparam):
         accelerator=config.ACCELERATOR,
         devices=hparam.device,
         max_epochs=config.MAX_EPOCHS,
-        default_root_dir=config.LOG_DIR,
         callbacks=[checkpoint_callback]
     )
 
     # Launch training session
+    if hparam.model_name[:6]=="resnet": trainer.fit(resnet, data_module)
     if hparam.model_name=="vgg": trainer.fit(vgg, data_module)
-    if hparam.model_name[:6] =="resnet": trainer.fit(resnet, data_module)
     
     return "training finished"
 
