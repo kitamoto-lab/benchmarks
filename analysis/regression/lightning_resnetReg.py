@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 
 
 class LightningResnetReg(pl.LightningModule):
+    """Resnet Module using lightning architecture"""
     def __init__(self, learning_rate, weights, num_classes, model_name):
         super().__init__()
         self.save_hyperparameters()

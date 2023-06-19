@@ -11,6 +11,7 @@ from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
 
 
 class TyphoonDataModule(pl.LightningDataModule):
+    """Typhoon Dataset Module using lightning architecture"""
     def __init__(
         self,
         dataroot,

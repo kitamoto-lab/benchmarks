@@ -6,11 +6,12 @@ import pytorch_lightning as pl
 
 
 class LightningVggReg(pl.LightningModule):
+    """Resnet Module using lightning architecture"""
     def __init__(self, learning_rate, weights, num_classes):
         super().__init__()
         self.save_hyperparameters()
 
-        self.model = vgg16_bn(num_classes=1, weights=weights)
+        self.model = vgg16_bn(num_classes=num_classes, weights=weights)
         self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
         self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
         self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=1, bias = True)
@@ -22,7 +23,6 @@ class LightningVggReg(pl.LightningModule):
 
         self.truth_labels = []
         self.predicted_labels = []
-
 
     def forward(self, images):
         images = torch.Tensor(images).float()
@@ -44,6 +44,7 @@ class LightningVggReg(pl.LightningModule):
         return loss
     
     def on_validation_epoch_end(self):
+        """Save logs of every epochs : couple (truth, predictions) and validation loss"""
         tensorboard = self.logger.experiment
 
         all_preds = torch.concat(self.predicted_labels)

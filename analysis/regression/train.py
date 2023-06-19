@@ -15,12 +15,14 @@ import torch
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
 
 def parse_args(args):
+    """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
+
     args_parsing = ""
     if args.model_name not in ["resnet18", "resnet50", "vgg"]:
         args_parsing += "Please give model_name among resnet18, 50 or vgg\n"
     if args.size not in ["512", "224", 512, 224]:
         args_parsing += "Please give size equals to 512 or 224\n"
-    if args.cropped not in ["False", "True", False, True]:
+    if args.cropped not in ["False", "True", "false", "true", False, True]:
         args_parsing += "Please give cropped equals to False or True\n"
     if int(args.device) not in range(torch.cuda.device_count()):
         args_parsing += "Please give a device number in the range (0, %d)\n" %torch.cuda.device_count()
@@ -37,8 +39,8 @@ def parse_args(args):
     elif args.size == '224'  or args.size == 224:
         args.size = (224, 224)
     
-    if args.cropped == "False": args.cropped = False
-    if args.cropped == "True": args.cropped = True
+    if args.cropped in ["False", "false"]: args.cropped = False
+    if args.cropped == ["True", "true"]: args.cropped = True
 
     if args.device == None:
         args.device = config.DEVICES
@@ -48,7 +50,7 @@ def parse_args(args):
     return args
 
 def train(hparam):
-    
+    """Launch a training with the lightning library and the arguments given in the python command and the hyper parameters in the config file"""
     hparam = parse_args(hparam)
 
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
@@ -56,11 +58,12 @@ def train(hparam):
     else : logger_name += "_no-crop"
 
     logger = TensorBoardLogger(
-        save_dir="tb_logs",
+        save_dir="results",
         name= logger_name,
         default_hp_metric=False,
     )
 
+    # Log all hyper parameters
     logger.log_hyperparams({
         'start_time': start_time_str,
         'LEARNING_RATE': config.LEARNING_RATE,
@@ -83,7 +86,7 @@ def train(hparam):
         'MODEL_NAME': hparam.model_name,
         })
 
-    # Set up data
+    # Set up dataset
     data_module = TyphoonDataModule(
         config.DATA_DIR,
         batch_size=config.BATCH_SIZE,
@@ -97,7 +100,7 @@ def train(hparam):
         cropped=hparam.cropped
     )
 
-    # Train
+    # model selection
     if hparam.model_name[:6] == "resnet":
         resnet = LightningResnetReg(
             learning_rate=config.LEARNING_RATE,
@@ -112,6 +115,7 @@ def train(hparam):
             num_classes=config.NUM_CLASSES,
         )
 
+    # Callback
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,
         filename='model_{epoch}',
@@ -121,6 +125,7 @@ def train(hparam):
         save_top_k = 5
         )
 
+    # Setting up the lightning trainer
     trainer = pl.Trainer(
         logger=logger,
         accelerator=config.ACCELERATOR,
@@ -130,7 +135,7 @@ def train(hparam):
         callbacks=[checkpoint_callback]
     )
 
-
+    # Launch training session
     if hparam.model_name=="vgg": trainer.fit(vgg, data_module)
     if hparam.model_name[:6] =="resnet": trainer.fit(resnet, data_module)
     
@@ -139,10 +144,10 @@ def train(hparam):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", default='resnet')
-    parser.add_argument("--size")
-    parser.add_argument("--cropped", default=False)
-    parser.add_argument("--device")
+    parser.add_argument("--model_name", default='resnet18')
+    parser.add_argument("--size", default=config.DOWNSAMPLE_SIZE)
+    parser.add_argument("--cropped", default=True) # if size is 512, cropped argument doesn't have any impact
+    parser.add_argument("--device", default=config.DEVICES)
     parser.add_argument("--labels", default=config.LABELS)
     args = parser.parse_args()
 

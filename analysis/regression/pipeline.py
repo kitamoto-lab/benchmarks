@@ -3,11 +3,13 @@ from argparse import ArgumentParser
 
 
 def save_log(file, str):
+    """Write brief logs for every training of the pipeline"""
     pipeline_log = open(file, "a")
     pipeline_log.write(str)
     pipeline_log.close()
 
 if __name__ == "__main__":
+    """Pipeline which directly call the train function of the train.py file"""
     parser = ArgumentParser()
     parser.add_argument("--model_name")
     parser.add_argument("--size")
