@@ -14,7 +14,7 @@ import torch
 
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
 
-def parse_args(args):
+def custom_parse_args(args):
     """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
 
     args_parsing = ""
@@ -51,7 +51,7 @@ def parse_args(args):
 
 def train(hparam):
     """Launch a training with the lightning library and the arguments given in the python command and the hyper parameters in the config file"""
-    hparam = parse_args(hparam)
+    hparam = custom_parse_args(hparam)
 
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
     if hparam.cropped: logger_name += "_cropped"
@@ -115,7 +115,7 @@ def train(hparam):
             num_classes=config.NUM_CLASSES,
         )
 
-    # Callback
+    # Callback for model checkpoint
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,
         filename='model_{epoch}',

@@ -15,8 +15,13 @@ To run the regression code :
 ```python
 python3 train.py --model_name resnet18 --labels wind --size 224 --cropped True --device 0
 ```
+Parameters can be changed to have one of the results of the tables 2 and 3 in the paper
+Also a pipeline is provided which trains all the results in a row:
+```python
+python3 pipeline.py --device 0
+```
 
-To run the classification code (only available for wind label for now)
+To run the classification code
 ```python
 python3 train.py --model_name vgg --size 224 --cropped True --device 0
 ```

@@ -19,14 +19,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     for i in range(1):
-        args.model_name, args.size, args.cropped, args.device, args.labels = "resnet18", "512", False, 0, "wind"
-        train_log = train(args)
-        save_log("pipeline_logs.txt", "training session " + str(i*3) + " : " + str(args) + " " + train_log + "\n")
+        for label in ["pressure", "wind"]:
+            for model in ["resnet18", "resnet50"]:
+                args.model_name, args.size, args.cropped, args.device, args.labels = model, "512", False, 0, label
+                train_log = train(args)
+                save_log("pipeline_logs.txt", "training session " + str(i*3) + " : " + str(args) + " " + train_log + "\n")
 
-        args.model_name, args.size, args.cropped, args.device, args.labels = "resnet50", "224", "False", 0, "wind"
-        train_log = train(args)
-        save_log("pipeline_logs.txt", "training session " + str(i*3 +1) + " : " + str(args) + " " + train_log + "\n")
+                args.model_name, args.size, args.cropped, args.device, args.labels = model, "224", "False", 0, label
+                train_log = train(args)
+                save_log("pipeline_logs.txt", "training session " + str(i*3 +1) + " : " + str(args) + " " + train_log + "\n")
 
-        args.model_name, args.size, args.cropped, args.device, args.labels = "resnet18", "224", "True", 0, "wind"
-        train_log = train(args)
-        save_log("pipeline_logs.txt", "training session " + str(i*3 +2) + " : " + str(args) + " " + train_log + "\n")
+                args.model_name, args.size, args.cropped, args.device, args.labels = model, "224", "True", 0, label
+                train_log = train(args)
+                save_log("pipeline_logs.txt", "training session " + str(i*3 +2) + " : " + str(args) + " " + train_log + "\n")
