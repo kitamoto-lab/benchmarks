@@ -1,21 +1,34 @@
 import torch.nn as nn
 import torch
 import torch.optim as optim
-from torchvision.models import vgg16_bn
+from torchvision.models import resnet18, resnet50, vgg16_bn
 import pytorch_lightning as pl
 
 
-class LightningVggReg(pl.LightningModule):
+class LightningRegressionModel(pl.LightningModule):
     """Resnet Module using lightning architecture"""
-    def __init__(self, learning_rate, weights, num_classes):
+    def __init__(self, learning_rate, weights, num_classes, model_name):
         super().__init__()
         self.save_hyperparameters()
 
-        self.model = vgg16_bn(num_classes=num_classes, weights=weights)
-        self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
-        self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
-        self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=1, bias = True)
-        
+        if model_name == "resnet18" : 
+            self.model = resnet18(weights=weights, num_classes=num_classes)
+            self.model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
+            self.model.conv1 = nn.Conv2d(
+                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            )
+        if model_name == "resnet50" : 
+            self.model = resnet50(weights=weights, num_classes=num_classes)
+            self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
+            self.model.conv1 = nn.Conv2d(
+                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            )
+        if model_name == "vgg" :
+            self.model = vgg16_bn(num_classes=num_classes, weights=weights)
+            self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
+            self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
+            self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=1, bias = True)
+            
         self.learning_rate = learning_rate
         self.loss_fn = nn.MSELoss()
         
@@ -50,7 +63,7 @@ class LightningVggReg(pl.LightningModule):
         all_preds = torch.concat(self.predicted_labels)
         all_truths = torch.concat(self.truth_labels)
         all_couple = torch.cat((all_truths, all_preds), dim=1)
-        self.logger.experiment.add_embedding(all_couple, tag="couple_label_pred_ep" + str(self.current_epoch) + ".tsv")
+        self.logger.experiment.add_embedding(all_couple, tag="couple_label_pred_ep" + str(self.current_epoch))
         
         wind_values = torch.unique(all_truths)
         pred_means = []
@@ -65,18 +78,13 @@ class LightningVggReg(pl.LightningModule):
             pred_std.append(std)
             pred_n.append(n)
 
-        # Log regression line graph every 5 epochs
-        if(self.current_epoch %5 == 0 ):            
-            for i in range(len(wind_values)):
-                tensorboard.add_scalars(f"epoch_{self.current_epoch}",{'pred_mean':pred_means[i],'truth':wind_values[i]},wind_values[i])
-                tensorboard.add_scalars(f"epoch_{self.current_epoch}_stats",{'pred_std':pred_std[i],'pred_n':pred_n[i]},wind_values[i])
-        
         train_loss = torch.mean(torch.tensor(self.all_train_loss))
-        train_loss = torch.sqrt(torch.tensor(train_loss))
+        train_loss = torch.sqrt(train_loss.clone().detach())
 
         validation_loss = self.loss_fn(all_preds, all_truths)
-        validation_loss = torch.sqrt(torch.tensor(validation_loss))
-        tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss},self.current_epoch)
+        validation_loss = torch.sqrt(validation_loss.clone().detach())
+        if train_loss == train_loss: # Check if train_loss != nan
+            tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss}, self.current_epoch)
 
         self.log("validation_loss", validation_loss)
 

@@ -2,8 +2,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from FrameDatamodule import TyphoonDataModule
-from lightning_resnetReg import LightningResnetReg
-from lightning_VggReg import LightningVggReg
+from LightningRegressionModel import LightningRegressionModel
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 import config
@@ -99,19 +98,12 @@ def train(hparam):
     )
 
     # model selection
-    if hparam.model_name[:6] == "resnet":
-        resnet = LightningResnetReg(
-            learning_rate=config.LEARNING_RATE,
-            weights=config.WEIGHTS,
-            num_classes=config.NUM_CLASSES,
-            model_name = hparam.model_name
-        )
-    else:
-        vgg = LightningVggReg(
-            learning_rate=config.LEARNING_RATE,
-            weights=config.WEIGHTS,
-            num_classes=config.NUM_CLASSES,
-        )
+    regression_model = LightningRegressionModel(
+        learning_rate=config.LEARNING_RATE,
+        weights=config.WEIGHTS,
+        num_classes=config.NUM_CLASSES,
+        model_name = hparam.model_name
+    )
 
     # Callback for model checkpoint
     checkpoint_callback = ModelCheckpoint(
@@ -133,8 +125,7 @@ def train(hparam):
     )
 
     # Launch training session
-    if hparam.model_name[:6]=="resnet": trainer.fit(resnet, data_module)
-    if hparam.model_name=="vgg": trainer.fit(vgg, data_module)
+    trainer.fit(regression_model, data_module)
     
     return "training finished"
 
