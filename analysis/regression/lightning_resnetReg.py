@@ -74,11 +74,12 @@ class LightningResnetReg(pl.LightningModule):
             pred_n.append(n)
 
         train_loss = torch.mean(torch.tensor(self.all_train_loss))
-        train_loss = torch.sqrt(torch.tensor(train_loss))
+        train_loss = torch.sqrt(train_loss.clone().detach())
 
         validation_loss = self.loss_fn(all_preds, all_truths)
-        validation_loss = torch.sqrt(torch.tensor(validation_loss))
-        tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss},self.current_epoch)
+        validation_loss = torch.sqrt(validation_loss.clone().detach())
+        if train_loss == train_loss: # Check if train_loss != nan
+            tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss}, self.current_epoch)
 
         self.log("validation_loss", validation_loss)
 
