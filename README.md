@@ -7,27 +7,6 @@ Note: this repository originally lived in [this](https://github.com/jared-hwang/
 
 ## Instructions to run
 
-### Analysis Task
-
-Two folder are available, one for the classification comparison with the results in the appendix and another one for the regression comparison.
-
-To run the regression code :
-```python
-python3 train.py --model_name resnet18 --labels wind --size 224 --cropped True --device 0
-```
-Parameters can be changed to have one of the results of the tables 2 and 3 in the paper
-Also a pipeline is provided which trains all the results in a row:
-```python
-python3 pipeline.py --device 0
-```
-
-To run the classification code
-```python
-python3 train.py --model_name vgg --size 224 --cropped True --device 0
-```
-
-### Forecasting
-
 #### Docker
 All of the below commands should be run in a Docker container built using the Dockerfile in the repo, with the data and repo being exposed as volumes in the container. 
 
@@ -38,6 +17,39 @@ To build:
 To run an interactive shell:
 
 ```docker run -it --shm-size=2G --gpus all -v /path/to/neurips2023-benchmarks:/neurips2023-benchmarks -v /path/to/datasets/:/data benchmarks_img```
+
+
+### Analysis Task
+
+Two folder are available, one for the classification comparison with the results in the appendix and another one for the regression comparison of the analysis part in the benchmark section.
+
+First, the path to the dataset must be correctly initialized in the config.py file in analysis/regression and analysis/classification, the variable DATA_DIR must lead to the dataset with the folders images/, metadata/ and the file metadata.json.
+
+Then, to run the regression code :
+```
+cd analysis/regression
+python3 train.py --model_name resnet18 --labels wind --size 224 --cropped True --device 0
+```
+Arguments can be changed to have one of the results of the tables 2 and 3 in the paper.
+A pipeline is also provided which trains all the benchmarks in a row:
+```
+cd analysis/regression
+python3 pipeline.py --device 0
+```
+
+To run the classification code :
+```
+cd analysis/classification
+python3 train.py --model_name vgg --size 224 --cropped True --device 0
+```
+Same as above, a pipeline in the classification folder launch all the training of the classification benchmarks in a row:
+```
+cd analysis/classification
+python3 pipeline.py --device 0
+```
+
+
+### Forecasting
 
 Ensure that when running the following commands, the appropriate path to ```WP/``` is specified in the ```hyperparameters.py``` files in ```ConvLSTM/``` and ```ResNet/``` in the variable ```data_dir```.
 
