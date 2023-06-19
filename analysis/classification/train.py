@@ -2,9 +2,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from FrameDatamodule import TyphoonDataModule
-from lightning_resnet import LightningResnet
-from lightning_vgg import LightningVGG
-from lightning_vit import LightningVit
+from LightningClassifModel import LightningClassifModel
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 import config
@@ -19,8 +17,8 @@ def custom_parse_args(args):
     """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
 
     args_parsing = ""
-    if args.model_name not in ["resnet18", "resnet50", "vgg", "vit"]:
-        args_parsing += "Please give model_name among resnet18, 50 or vgg\n"
+    if args.model_name not in ["resnet18", "vgg", "vit"]:
+        args_parsing += "Please give model_name among resnet18, vgg or vit\n"
     if args.size not in ["512", "224", 512, 224]:
         args_parsing += "Please give size equals to 512 or 224\n"
     if args.cropped not in ["False", "True", "false", "true", False, True]:
@@ -97,20 +95,11 @@ def train(hparam):
     )
 
     # Train
-    resnet = LightningResnet(
+    classification_model = LightningClassifModel(
         learning_rate=config.LEARNING_RATE,
         weights=config.WEIGHTS,
         num_classes=config.NUM_CLASSES,
-    )
-    vgg = LightningVGG(
-        learning_rate=config.LEARNING_RATE,
-        weights=config.WEIGHTS,
-        num_classes=config.NUM_CLASSES,
-    )
-    vit = LightningVit(
-        learning_rate=config.LEARNING_RATE,
-        weights=config.WEIGHTS,
-        num_classes=config.NUM_CLASSES,
+        model_name=hparam.model_name
     )
 
     # Callback for model checkpoint
@@ -133,9 +122,7 @@ def train(hparam):
     )
 
     # Launch training session
-    if hparam.model_name[:6]=="resnet": trainer.fit(resnet, data_module)
-    if hparam.model_name=="vgg": trainer.fit(vgg, data_module)
-    if hparam.model_name=="vit":trainer.fit(vit, data_module)
+    trainer.fit(classification_model, data_module)
 
     return "training finished"
 
