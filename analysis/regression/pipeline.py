@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--labels")
     args = parser.parse_args()
 
-    for i in range(1):
+    for i in range(5):
         for label in ["pressure", "wind"]:
             for model in ["resnet18", "resnet50"]:
                 args.model_name, args.size, args.cropped, args.device, args.labels = model, "512", False, 0, label
