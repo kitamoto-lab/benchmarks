@@ -106,7 +106,7 @@ def train(hparam):
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,
         filename='model_{epoch}',
-        monitor='validation_loss', 
+        monitor='val_loss', 
         verbose=True,
         every_n_epochs=1,
         save_top_k = 5
