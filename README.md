@@ -1,6 +1,6 @@
-# neurips2023-benchmarks
+# benchmarks
 
-This repository contains the model and code used for benchmarking the Digital Typhoon Dataset as submitted to the NeuRIPS 2023 Dataset track. Contained are three folders: analysis, reanalysis, and forecasting, each one containing the code used for those respective benchmarks in the paper. 
+This repository contains the model and code used for benchmarks of the Digital Typhoon Dataset. Contained are three folders: analysis, reanalysis, and forecasting, each one containing the code used for those respective tasks. 
 
 Note: this repository originally lived in [this](https://github.com/jared-hwang/DigitalTyphoonModels) repository.
 
