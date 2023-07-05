@@ -7,10 +7,11 @@ from torchvision.transforms.functional import center_crop
 from pathlib import Path
 import numpy as np
 
-from DigitalTyphoonDataloader.DigitalTyphoonDataset import DigitalTyphoonDataset
+from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
 
 
 class TyphoonDataModule(pl.LightningDataModule):
+    """Typhoon Dataset Module using lightning architecture"""
     def __init__(
         self,
         dataroot,

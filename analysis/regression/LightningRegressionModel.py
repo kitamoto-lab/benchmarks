@@ -1,28 +1,34 @@
 import torch.nn as nn
 import torch
 import torch.optim as optim
-from torchvision.models import resnet18, resnet50, resnet152
+from torchvision.models import resnet18, resnet50, vgg16_bn
 import pytorch_lightning as pl
 
 
-class LightningResnetReg(pl.LightningModule):
+class LightningRegressionModel(pl.LightningModule):
+    """Resnet Module using lightning architecture"""
     def __init__(self, learning_rate, weights, num_classes, model_name):
         super().__init__()
         self.save_hyperparameters()
 
         if model_name == "resnet18" : 
             self.model = resnet18(weights=weights, num_classes=num_classes)
-            self.model.fc = nn.Linear(in_features=512, out_features=1, bias=True)
+            self.model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
         if model_name == "resnet50" : 
             self.model = resnet50(weights=weights, num_classes=num_classes)
-            self.model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
+            self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
-
+        if model_name == "vgg" :
+            self.model = vgg16_bn(num_classes=num_classes, weights=weights)
+            self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
+            self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
+            self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=1, bias = True)
+            
         self.learning_rate = learning_rate
         self.loss_fn = nn.MSELoss()
         
@@ -30,7 +36,6 @@ class LightningResnetReg(pl.LightningModule):
 
         self.truth_labels = []
         self.predicted_labels = []
-
 
     def forward(self, images):
         images = torch.Tensor(images).float()
@@ -52,6 +57,7 @@ class LightningResnetReg(pl.LightningModule):
         return loss
     
     def on_validation_epoch_end(self):
+        """Save logs of every epochs : couple (truth, predictions) and validation loss"""
         tensorboard = self.logger.experiment
 
         all_preds = torch.concat(self.predicted_labels)
@@ -73,11 +79,12 @@ class LightningResnetReg(pl.LightningModule):
             pred_n.append(n)
 
         train_loss = torch.mean(torch.tensor(self.all_train_loss))
-        train_loss = torch.sqrt(torch.tensor(train_loss))
+        train_loss = torch.sqrt(train_loss.clone().detach())
 
         validation_loss = self.loss_fn(all_preds, all_truths)
-        validation_loss = torch.sqrt(torch.tensor(validation_loss))
-        tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss},self.current_epoch)
+        validation_loss = torch.sqrt(validation_loss.clone().detach())
+        if train_loss == train_loss: # Check if train_loss != nan
+            tensorboard.add_scalars(f"Loss (RMSE)", {'train':train_loss,'validation':validation_loss}, self.current_epoch)
 
         self.log("validation_loss", validation_loss)
 
