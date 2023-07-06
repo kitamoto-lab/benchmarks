@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
 import torch.optim as optim
-from torchvision.models import resnet18, resnet50, vgg16_bn
+from torchvision.models import resnet18, resnet50, resnet101, vgg16_bn
 import pytorch_lightning as pl
 
 
@@ -12,7 +12,7 @@ class LightningRegressionModel(pl.LightningModule):
         self.save_hyperparameters()
 
         if model_name == "resnet18" : 
-            self.model = resnet18(weights=weights, num_classes=num_classes)
+            self.model = resnet18(weights=weights)
             self.model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
@@ -28,7 +28,7 @@ class LightningRegressionModel(pl.LightningModule):
             self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
             self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
             self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=1, bias = True)
-            
+
         self.learning_rate = learning_rate
         self.loss_fn = nn.MSELoss()
         
@@ -90,6 +90,8 @@ class LightningRegressionModel(pl.LightningModule):
 
         self.predicted_labels.clear()  # free memory
         self.truth_labels.clear()
+        
+        print("train_loss:", train_loss.item(), "validation_loss:",  validation_loss.item())
 
     def test_step(self, batch, batch_idx):
         loss, outputs, labels = self._common_step(batch)
@@ -97,7 +99,6 @@ class LightningRegressionModel(pl.LightningModule):
 
     def _common_step(self, batch):
         images, labels = batch
-        labels = labels - 2
         labels = torch.reshape(labels, [labels.size()[0],1])
         outputs = self.forward(images)
         loss = self.loss_fn(outputs, labels.float())
@@ -105,11 +106,12 @@ class LightningRegressionModel(pl.LightningModule):
 
     def predict_step(self, batch):
         images, labels = batch
-        labels = labels - 2
         labels = torch.reshape(labels, [labels.size()[0],1])
         outputs = self.forward(images)
         preds = outputs
         return preds
 
     def configure_optimizers(self):
-        return optim.SGD(self.parameters(), lr=self.learning_rate)
+        optimizer = optim.SGD(self.parameters(), lr=self.learning_rate)
+        # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1, last_epoch=- 1, verbose=True)
+        return optimizer

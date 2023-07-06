@@ -10,15 +10,36 @@ from argparse import ArgumentParser
 
 from datetime import datetime
 import torch
+from torchvision.transforms.functional import center_crop
+
+from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
+from pathlib import Path
+import numpy as np
 
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
+
+class TripleIterableDataset(torch.utils.data.IterableDataset):
+    def __init__(self, dataset, start, end):
+        super(TripleIterableDataset).__init__()
+        self.dataset = dataset
+        self.start = start
+        self.end = end
+
+    def __iter__(self):
+        for i in range(self.start, self.end):
+            image, labels = self.dataset[i]
+            image_tensor = torch.Tensor(image)
+            image_tensor = center_crop(image_tensor, (224, 224))
+            image_numpy = image_tensor.numpy()
+            yield image_numpy, float(labels[8])
+
 
 def custom_parse_args(args):
     """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
 
     args_parsing = ""
-    if args.model_name not in ["resnet18", "resnet50", "vgg"]:
-        args_parsing += "Please give model_name among resnet18, 50 or vgg\n"
+    if args.model_name not in ["resnet18", "resnet50","resnet101", "vgg"]:
+        args_parsing += "Please give model_name among resnet18, 50, 101 or vgg\n"
     if args.size not in ["512", "224", 512, 224]:
         args_parsing += "Please give size equals to 512 or 224\n"
     if args.cropped not in ["False", "True", "false", "true", False, True]:
@@ -83,19 +104,19 @@ def train(hparam):
         'MODEL_NAME': hparam.model_name,
         })
 
-    # Set up dataset
-    data_module = TyphoonDataModule(
-        config.DATA_DIR,
-        batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        labels=hparam.labels,
-        split_by=config.SPLIT_BY,
-        load_data=config.LOAD_DATA,
-        dataset_split=config.DATASET_SPLIT,
-        standardize_range=config.STANDARDIZE_RANGE,
-        downsample_size=hparam.size,
-        cropped=hparam.cropped
-    )
+    # # Set up dataset
+    # data_module = TyphoonDataModule(
+    #     config.DATA_DIR,
+    #     batch_size=config.BATCH_SIZE,
+    #     num_workers=config.NUM_WORKERS,
+    #     labels=hparam.labels,
+    #     split_by=config.SPLIT_BY,
+    #     load_data=config.LOAD_DATA,
+    #     dataset_split=config.DATASET_SPLIT,
+    #     standardize_range=config.STANDARDIZE_RANGE,
+    #     downsample_size=hparam.size,
+    #     cropped=hparam.cropped
+    # )
 
     # model selection
     regression_model = LightningRegressionModel(
@@ -121,11 +142,54 @@ def train(hparam):
         accelerator=config.ACCELERATOR,
         devices=hparam.device,
         max_epochs=config.MAX_EPOCHS,
+        # enable_progress_bar=False,
         callbacks=[checkpoint_callback]
     )
 
     # Launch training session
-    trainer.fit(regression_model, data_module)
+    DATA_DIR = Path('/dataset/typhoon/WP/')
+
+    images_path = str(DATA_DIR / "image")  + "/"
+    track_path = str(DATA_DIR / "metadata")  + "/"
+    metadata_path = str(DATA_DIR / "metadata.json")
+    label_list = ["year", "month", "day", "hour", "grade", "lat", "lng", "pressure", "wind", "dir50", "long50", "short50", "dir30", "long30", "short30", "landfall", 'interpolated', 'filename', 'mask_1', 'mask_1_percent']
+    n_labels = len(label_list)
+
+    def import_dataset():
+        print('importing dataset...')
+        dataset = DigitalTyphoonDataset(
+            str(images_path),
+            str(track_path),
+            str(metadata_path),
+            label_list,
+            load_data_into_memory="track",
+            filter_func=image_filter,
+            transform_func=None,
+            spectrum="Infrared",
+            verbose=False,
+        )
+        return dataset
+    
+    def image_filter(image):
+        return (
+            (image.grade() < 6)
+            and (image.grade() > 2)
+            and (image.year() < 2023)
+            and (100.0 <= image.long() <= 180.0)
+        )  # and (image.mask_1_percent() <  self.corruption_ceiling_pct))
+
+    dataset = import_dataset()
+    print(len(dataset))
+
+    # should give same set of data as range(3, 7), i.e., [3, 4, 5, 6].
+    train_iter_set = TripleIterableDataset(dataset, 0, 3)
+    val_iter_set = TripleIterableDataset(dataset, 3, 4)
+    print(list(train_iter_set))
+
+    train_loader = torch.utils.data.DataLoader(train_iter_set, batch_size=16)
+    val_loader = torch.utils.data.DataLoader(val_iter_set, batch_size=16)
+
+    trainer.fit(regression_model, train_loader, val_loader)
     
     return "training finished"
 

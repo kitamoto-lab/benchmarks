@@ -22,10 +22,10 @@ class LightningClassifModel(pl.LightningModule):
             )
             self.model.fc = nn.Linear(in_features=512, out_features=num_classes, bias=True)
         if model_name == "vgg":
-            self.model = vgg16_bn(num_classes=8, weights=weights)
+            self.model = vgg16_bn(weights=weights)
             self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))
             self.model.features[-1]=nn.AdaptiveMaxPool2d(7*7)
-            self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=8, bias = True)
+            self.model.classifier[-1]=nn.Linear(in_features = 4096, out_features=num_classes, bias = True)
         if model_name == "vit":
             self.model = vit_b_16(num_classes=8)
             self.model.conv_proj = nn.Conv2d(in_channels=1, out_channels=768, kernel_size=16, stride=16)
@@ -106,6 +106,7 @@ class LightningClassifModel(pl.LightningModule):
 
         self.predicted_labels.clear()  # free memory
         self.truth_labels.clear()
+        print(accuracy)
 
     def test_step(self, batch, batch_idx):
         loss, outputs, labels = self._common_step(batch)
@@ -128,4 +129,6 @@ class LightningClassifModel(pl.LightningModule):
         return preds
 
     def configure_optimizers(self):
-        return optim.SGD(self.parameters(), lr=self.learning_rate)
+        optimizer = optim.SGD(self.parameters(), lr=self.learning_rate)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1, last_epoch=- 1, verbose=True)
+        return [optimizer], [scheduler]
