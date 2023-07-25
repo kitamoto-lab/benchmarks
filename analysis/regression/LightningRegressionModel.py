@@ -18,10 +18,10 @@ class LightningRegressionModel(pl.LightningModule):
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
         if model_name == "resnet50" : 
-            self.model = resnet50(weights=weights, num_classes=num_classes)
+            self.model = resnet50(weights=weights)
             self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
-            self.model.conv1 = nn.Conv2d(
-                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            self.model.conv1 = nn.Conv3d(
+                3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
         if model_name == "vgg" :
             self.model = vgg16_bn(num_classes=num_classes, weights=weights)
@@ -39,9 +39,9 @@ class LightningRegressionModel(pl.LightningModule):
 
     def forward(self, images):
         images = torch.Tensor(images).float()
-        images = torch.reshape(
-            images, [images.size()[0], 1, images.size()[1], images.size()[2]]
-        )
+        # images = torch.reshape(
+        #     images, [images.size()[0], 1, images.size()[1], images.size()[2]]
+        # )
         output = self.model(images)
         return output
 
@@ -113,5 +113,5 @@ class LightningRegressionModel(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = optim.SGD(self.parameters(), lr=self.learning_rate)
-        # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1, last_epoch=- 1, verbose=True)
-        return optimizer
+        # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[15, 30, 45], gamma=0.1, last_epoch=-1, verbose=True)
+        return [optimizer] #, [scheduler]

@@ -18,21 +18,27 @@ import numpy as np
 
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
 
-class TripleIterableDataset(torch.utils.data.IterableDataset):
-    def __init__(self, dataset, start, end):
-        super(TripleIterableDataset).__init__()
+class TripleDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset, indice_list, start, end):
+        super(TripleDataset).__init__()
         self.dataset = dataset
         self.start = start
         self.end = end
+        self.indice_list = indice_list
 
-    def __iter__(self):
-        for i in range(self.start, self.end):
-            image, labels = self.dataset[i]
-            image_tensor = torch.Tensor(image)
-            image_tensor = center_crop(image_tensor, (224, 224))
-            image_numpy = image_tensor.numpy()
-            yield image_numpy, float(labels[8])
-
+    def __getitem__(self, idx):
+        original_idx = self.indice_list[self.start + idx]
+        image_0, labels_0 = self.dataset[original_idx]
+        image_moins1, labels_moins1 = self.dataset[original_idx-1]
+        image_moins2, labels_moins2 = self.dataset[original_idx-2]
+        image_x3 = np.array([image_moins2, image_moins1, image_0])
+        image_tensor = torch.Tensor(image_x3)
+        image_tensor = center_crop(image_tensor, (224, 224))
+        image_x3 = image_tensor.numpy()
+        return image_x3, float(labels_0[8])
+    
+    def __len__(self):
+        return (self.end - self.start)
 
 def custom_parse_args(args):
     """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
@@ -75,6 +81,7 @@ def train(hparam):
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
     if hparam.cropped: logger_name += "_cropped"
     else : logger_name += "_no-crop"
+    logger_name += "_3img_method"
 
     logger = TensorBoardLogger(
         save_dir="results",
@@ -102,21 +109,23 @@ def train(hparam):
         'DEVICES': hparam.device, 
         'DATA_DIR': config.DATA_DIR, 
         'MODEL_NAME': hparam.model_name,
+        "COMMENT": "3images at t-2, t-1 and t0. Use of a Conv3d for the first layer",
+        # "Scheduler": "Start from 0.001 and divide by 10 every 15epochs"
         })
 
     # # Set up dataset
-    # data_module = TyphoonDataModule(
-    #     config.DATA_DIR,
-    #     batch_size=config.BATCH_SIZE,
-    #     num_workers=config.NUM_WORKERS,
-    #     labels=hparam.labels,
-    #     split_by=config.SPLIT_BY,
-    #     load_data=config.LOAD_DATA,
-    #     dataset_split=config.DATASET_SPLIT,
-    #     standardize_range=config.STANDARDIZE_RANGE,
-    #     downsample_size=hparam.size,
-    #     cropped=hparam.cropped
-    # )
+    data_module = TyphoonDataModule(
+        config.DATA_DIR,
+        batch_size=config.BATCH_SIZE,
+        num_workers=config.NUM_WORKERS,
+        labels=hparam.labels,
+        split_by=config.SPLIT_BY,
+        load_data=config.LOAD_DATA,
+        dataset_split=config.DATASET_SPLIT,
+        standardize_range=config.STANDARDIZE_RANGE,
+        downsample_size=hparam.size,
+        cropped=hparam.cropped
+    )
 
     # model selection
     regression_model = LightningRegressionModel(
@@ -142,7 +151,7 @@ def train(hparam):
         accelerator=config.ACCELERATOR,
         devices=hparam.device,
         max_epochs=config.MAX_EPOCHS,
-        # enable_progress_bar=False,
+        enable_progress_bar=False,
         callbacks=[checkpoint_callback]
     )
 
@@ -179,15 +188,13 @@ def train(hparam):
         )  # and (image.mask_1_percent() <  self.corruption_ceiling_pct))
 
     dataset = import_dataset()
-    print(len(dataset))
 
-    # should give same set of data as range(3, 7), i.e., [3, 4, 5, 6].
-    train_iter_set = TripleIterableDataset(dataset, 0, 3)
-    val_iter_set = TripleIterableDataset(dataset, 3, 4)
-    print(list(train_iter_set))
+    indice_list = np.load("dataset2_indice_list.npy")
+    train_set = TripleDataset(dataset, indice_list, 2, 83825)
+    val_set = TripleDataset(dataset, indice_list, 83825, len(indice_list))
 
-    train_loader = torch.utils.data.DataLoader(train_iter_set, batch_size=16)
-    val_loader = torch.utils.data.DataLoader(val_iter_set, batch_size=16)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_set, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS)
 
     trainer.fit(regression_model, train_loader, val_loader)
     
