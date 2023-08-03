@@ -20,8 +20,8 @@ class LightningRegressionModel(pl.LightningModule):
         if model_name == "resnet50" : 
             self.model = resnet50(weights=weights)
             self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
-            self.model.conv1 = nn.Conv3d(
-                3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            self.model.conv1 = nn.Conv2d(
+                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
         if model_name == "vgg" :
             self.model = vgg16_bn(num_classes=num_classes, weights=weights)
@@ -39,9 +39,9 @@ class LightningRegressionModel(pl.LightningModule):
 
     def forward(self, images):
         images = torch.Tensor(images).float()
-        # images = torch.reshape(
-        #     images, [images.size()[0], 1, images.size()[1], images.size()[2]]
-        # )
+        images = torch.reshape(
+            images, [images.size()[0], 1, images.size()[1], images.size()[2]]
+        )
         output = self.model(images)
         return output
 

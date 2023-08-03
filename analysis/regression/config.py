@@ -1,13 +1,13 @@
 import torch
 
 # Training Hyperparameters
-LEARNING_RATE     = 0.001
+LEARNING_RATE     = 0.0001
 BATCH_SIZE        = 16
 NUM_WORKERS       = 24
 MAX_EPOCHS        = 60
 
 # Dataset parameters
-WEIGHTS           = None
+WEIGHTS           = "DEFAULT"
 LABELS            = 'wind' # Overwritten if labels argument is given
 SPLIT_BY          = 'sequence'
 LOAD_DATA         = 'all_data'
@@ -19,4 +19,4 @@ NUM_CLASSES       = 1
 # Computation parameters
 ACCELERATOR       = 'gpu' if torch.cuda.is_available() else 'cpu'
 DEVICES           = 0 # Overwritten if device argument is given
-DATA_DIR          = '/dataset/typhoon/WP/'
+DATA_DIR          = '/dataset/'

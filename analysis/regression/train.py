@@ -18,28 +18,6 @@ import numpy as np
 
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
 
-class TripleDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, indice_list, start, end):
-        super(TripleDataset).__init__()
-        self.dataset = dataset
-        self.start = start
-        self.end = end
-        self.indice_list = indice_list
-
-    def __getitem__(self, idx):
-        original_idx = self.indice_list[self.start + idx]
-        image_0, labels_0 = self.dataset[original_idx]
-        image_moins1, labels_moins1 = self.dataset[original_idx-1]
-        image_moins2, labels_moins2 = self.dataset[original_idx-2]
-        image_x3 = np.array([image_moins2, image_moins1, image_0])
-        image_tensor = torch.Tensor(image_x3)
-        image_tensor = center_crop(image_tensor, (224, 224))
-        image_x3 = image_tensor.numpy()
-        return image_x3, float(labels_0[8])
-    
-    def __len__(self):
-        return (self.end - self.start)
-
 def custom_parse_args(args):
     """Argument parser, verify if model_name, device, label, size and cropped arguments are correctly initialized"""
 
@@ -79,9 +57,9 @@ def train(hparam):
     hparam = custom_parse_args(hparam)
 
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
-    if hparam.cropped: logger_name += "_cropped"
-    else : logger_name += "_no-crop"
-    logger_name += "_3img_method"
+    # if hparam.cropped: logger_name += "_cropped"
+    # else : logger_name += "_no-crop"
+    logger_name += "_data_augmentation"
 
     logger = TensorBoardLogger(
         save_dir="results",
@@ -109,7 +87,7 @@ def train(hparam):
         'DEVICES': hparam.device, 
         'DATA_DIR': config.DATA_DIR, 
         'MODEL_NAME': hparam.model_name,
-        "COMMENT": "3images at t-2, t-1 and t0. Use of a Conv3d for the first layer",
+        "COMMENT": "Use of data augmentation with shifted cropping",
         # "Scheduler": "Start from 0.001 and divide by 10 every 15epochs"
         })
 
@@ -151,52 +129,20 @@ def train(hparam):
         accelerator=config.ACCELERATOR,
         devices=hparam.device,
         max_epochs=config.MAX_EPOCHS,
-        enable_progress_bar=False,
+        # enable_progress_bar=False,
         callbacks=[checkpoint_callback]
     )
 
     # Launch training session
-    DATA_DIR = Path('/dataset/typhoon/WP/')
+    DATA_DIR = Path(config.DATA_DIR)
 
     images_path = str(DATA_DIR / "image")  + "/"
     track_path = str(DATA_DIR / "metadata")  + "/"
-    metadata_path = str(DATA_DIR / "metadata.json")
+    metadata_path = str("/app/metadata.json")
     label_list = ["year", "month", "day", "hour", "grade", "lat", "lng", "pressure", "wind", "dir50", "long50", "short50", "dir30", "long30", "short30", "landfall", 'interpolated', 'filename', 'mask_1', 'mask_1_percent']
     n_labels = len(label_list)
 
-    def import_dataset():
-        print('importing dataset...')
-        dataset = DigitalTyphoonDataset(
-            str(images_path),
-            str(track_path),
-            str(metadata_path),
-            label_list,
-            load_data_into_memory="track",
-            filter_func=image_filter,
-            transform_func=None,
-            spectrum="Infrared",
-            verbose=False,
-        )
-        return dataset
-    
-    def image_filter(image):
-        return (
-            (image.grade() < 6)
-            and (image.grade() > 2)
-            and (image.year() < 2023)
-            and (100.0 <= image.long() <= 180.0)
-        )  # and (image.mask_1_percent() <  self.corruption_ceiling_pct))
-
-    dataset = import_dataset()
-
-    indice_list = np.load("dataset2_indice_list.npy")
-    train_set = TripleDataset(dataset, indice_list, 2, 83825)
-    val_set = TripleDataset(dataset, indice_list, 83825, len(indice_list))
-
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS)
-
-    trainer.fit(regression_model, train_loader, val_loader)
+    trainer.fit(regression_model, data_module)
     
     return "training finished"
 
