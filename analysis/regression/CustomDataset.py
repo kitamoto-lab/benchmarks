@@ -15,15 +15,15 @@ class CustomDataset(torch.utils.data.Dataset):
                                 95.0: 4, 100.0: 6, 105.0: 14, 110.0: 17, 115.0: 39,
                                 120.0: 150, 125.0: 200, 130.0: 200, 135.0: 0, 140.0: 200,}
         if self.data_aug:
-            # for idx in range(len(self.dataset)):
-            #     _, labels_0 = self.dataset[idx]
-            #     for _ in range(self.mult_proportion[labels_0]):
-            #         self.strong_typhoon_list.append(idx)
+            for idx in range(len(self.dataset)):
+                _, labels_0 = self.dataset[idx]
+                for _ in range(self.mult_proportion[labels_0]):
+                    self.strong_typhoon_list.append(idx)
 
-            #     if idx%1000 == 0:
-            #         print(idx)
-            # np.save("strong_typhoon_list3.npy", self.strong_typhoon_list)
-            self.strong_typhoon_list = np.load("strong_typhoon_list3.npy")
+                if idx%1000 == 0:
+                    print(idx)
+            np.save("strong_typhoon_list3.npy", self.strong_typhoon_list)
+            # self.strong_typhoon_list = np.load("strong_typhoon_list3.npy")
 
     def __getitem__(self, idx):
         if idx < len(self.dataset):
