@@ -10,11 +10,6 @@ from argparse import ArgumentParser
 
 from datetime import datetime
 import torch
-from torchvision.transforms.functional import center_crop
-
-from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
-from pathlib import Path
-import numpy as np
 
 start_time_str = str(datetime.now().strftime("%Y_%m_%d-%H.%M.%S"))
 
@@ -28,7 +23,7 @@ def custom_parse_args(args):
         args_parsing += "Please give size equals to 512 or 224\n"
     if args.cropped not in ["False", "True", "false", "true", False, True]:
         args_parsing += "Please give cropped equals to False or True\n"
-    if int(args.device) not in range(torch.cuda.device_count()):
+    if torch.cuda.is_available() and int(args.device) not in range(torch.cuda.device_count()):
         args_parsing += "Please give a device number in the range (0, %d)\n" %torch.cuda.device_count()
     if args.labels not in ["wind", "pressure"]:
         args_parsing += "Please give size equals to wind or pressure\n"
@@ -43,7 +38,7 @@ def custom_parse_args(args):
         args.size = (224, 224)
     
     if args.cropped in ["False", "false"]: args.cropped = False
-    if args.cropped == ["True", "true"]: args.cropped = True
+    if args.cropped in ["True", "true"]: args.cropped = True
 
     if args.device == None:
         args.device = config.DEVICES
@@ -53,7 +48,7 @@ def custom_parse_args(args):
     return args
 
 def train(hparam):
-    """Launch a training with the lightning library and the arguments given in the python command and the hyper parameters in the config file"""
+    """Launch a training with the PytorchLightning workflow, the arguments given in the python command and the hyper parameters in the config file"""
     hparam = custom_parse_args(hparam)
 
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
@@ -103,7 +98,7 @@ def train(hparam):
         cropped=hparam.cropped
     )
 
-    # model selection
+    # Model selection
     regression_model = LightningRegressionModel(
         learning_rate=config.LEARNING_RATE,
         weights=config.WEIGHTS,
@@ -111,6 +106,7 @@ def train(hparam):
         model_name = hparam.model_name
     )
     # regression_model = regression_model.load_from_checkpoint("/app/neurips2023-benchmarks/analysis/regression/results/wind_resnet50_512_data_augmentation/version_9/checkpoints/model_epoch=32.ckpt")
+    
     # Callback for model checkpoint
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,
@@ -136,8 +132,9 @@ def train(hparam):
     
     return "training finished"
 
-
+# Main execution block
 if __name__ == "__main__":
+    # Parse command-line arguments using argparse
     parser = ArgumentParser()
     parser.add_argument("--model_name", default='resnet18')
     parser.add_argument("--size", default=config.DOWNSAMPLE_SIZE)

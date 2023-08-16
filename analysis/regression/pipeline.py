@@ -9,7 +9,7 @@ def save_log(file, str):
     pipeline_log.close()
 
 if __name__ == "__main__":
-    """Pipeline which directly call the train function of the train.py file"""
+    """Pipeline which directly call the train function of the train.py file, with the necessary arguments to reproduce the paper results """
     parser = ArgumentParser()
     parser.add_argument("--model_name")
     parser.add_argument("--size")
@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--labels")
     args = parser.parse_args()
 
+    # Pipeline launched for 5 sessions training 
     for i in range(5):
         for label in ["pressure", "wind"]:
             for model in ["resnet18", "resnet50"]:
