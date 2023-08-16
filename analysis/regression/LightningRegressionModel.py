@@ -23,6 +23,12 @@ class LightningRegressionModel(pl.LightningModule):
             self.model.conv1 = nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
+        if model_name == "resnet101" : 
+            self.model = resnet101(weights=weights)
+            self.model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
+            self.model.conv1 = nn.Conv2d(
+                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            )
         if model_name == "vgg" :
             self.model = vgg16_bn(num_classes=num_classes, weights=weights)
             self.model.features[0]= nn.Conv2d(1,64,kernel_size=(3,3),stride=(1,1),padding=(1,1))

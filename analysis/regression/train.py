@@ -87,11 +87,11 @@ def train(hparam):
         'DEVICES': hparam.device, 
         'DATA_DIR': config.DATA_DIR, 
         'MODEL_NAME': hparam.model_name,
-        "COMMENT": "Use of data augmentation with shifted cropping",
+        "COMMENT": "data augmentation, random_key=3, LR=0.0005",
         # "Scheduler": "Start from 0.001 and divide by 10 every 15epochs"
         })
 
-    # # Set up dataset
+    # Set up dataset
     data_module = TyphoonDataModule(
         config.DATA_DIR,
         batch_size=config.BATCH_SIZE,
@@ -112,7 +112,7 @@ def train(hparam):
         num_classes=config.NUM_CLASSES,
         model_name = hparam.model_name
     )
-
+    # regression_model = regression_model.load_from_checkpoint("/app/neurips2023-benchmarks/analysis/regression/results/wind_resnet50_512_data_augmentation/version_9/checkpoints/model_epoch=32.ckpt")
     # Callback for model checkpoint
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,
@@ -129,19 +129,11 @@ def train(hparam):
         accelerator=config.ACCELERATOR,
         devices=hparam.device,
         max_epochs=config.MAX_EPOCHS,
-        # enable_progress_bar=False,
+        enable_progress_bar=False,
         callbacks=[checkpoint_callback]
     )
 
     # Launch training session
-    DATA_DIR = Path(config.DATA_DIR)
-
-    images_path = str(DATA_DIR / "image")  + "/"
-    track_path = str(DATA_DIR / "metadata")  + "/"
-    metadata_path = str("/app/metadata.json")
-    label_list = ["year", "month", "day", "hour", "grade", "lat", "lng", "pressure", "wind", "dir50", "long50", "short50", "dir30", "long30", "short30", "landfall", 'interpolated', 'filename', 'mask_1', 'mask_1_percent']
-    n_labels = len(label_list)
-
     trainer.fit(regression_model, data_module)
     
     return "training finished"

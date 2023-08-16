@@ -61,13 +61,13 @@ class TyphoonDataModule(pl.LightningDataModule):
             spectrum="Infrared",
             verbose=False,
         )
-        generator1 = torch.Generator().manual_seed(42)
+        generator1 = torch.Generator().manual_seed(3)
 
         self.train_set, self.val_set, _ = dataset.random_split(
             self.dataset_split, split_by=self.split_by, generator=generator1
         )
 
-        self.train_set = CustomDataset(self.train_set, data_aug=False)
+        self.train_set = CustomDataset(self.train_set, data_aug=True)
         self.val_set = CustomDataset(self.val_set, data_aug=False)
 
     def train_dataloader(self):

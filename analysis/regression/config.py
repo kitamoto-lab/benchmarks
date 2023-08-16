@@ -1,10 +1,10 @@
 import torch
 
 # Training Hyperparameters
-LEARNING_RATE     = 0.0001
+LEARNING_RATE     = 0.0005
 BATCH_SIZE        = 16
 NUM_WORKERS       = 24
-MAX_EPOCHS        = 60
+MAX_EPOCHS        = 150
 
 # Dataset parameters
 WEIGHTS           = "DEFAULT"

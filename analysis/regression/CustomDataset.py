@@ -22,13 +22,15 @@ class CustomDataset(torch.utils.data.Dataset):
 
             #     if idx%1000 == 0:
             #         print(idx)
-            self.strong_typhoon_list = np.load("strong_typhoon_list.npy")[:0]
+            # np.save("strong_typhoon_list3.npy", self.strong_typhoon_list)
+            self.strong_typhoon_list = np.load("strong_typhoon_list3.npy")
 
     def __getitem__(self, idx):
         if idx < len(self.dataset):
             image_0, labels_0 = self.dataset[idx]
         else:
             image_0, labels_0 = self.dataset[self.strong_typhoon_list[idx-len(self.dataset)]]
+
         image_tensor = torch.tensor(image_0)
         if self.data_aug:
             image_tensor = RandomCrop(224)(image_tensor)
@@ -36,7 +38,7 @@ class CustomDataset(torch.utils.data.Dataset):
             image_tensor = center_crop(image_tensor, (224, 224))
 
         return image_tensor, labels_0
-    
+
     def __len__(self):
         if self.data_aug:
             return (len(self.dataset) + len(self.strong_typhoon_list))

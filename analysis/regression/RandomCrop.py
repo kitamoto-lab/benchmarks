@@ -21,7 +21,7 @@ class RandomCrop(object):
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
 
-        max_shift = 0
+        max_shift = 10
         top = np.random.randint((h - new_h) / 2 - max_shift, (h - new_h) / 2 + max_shift + 1 )
         left = np.random.randint((w - new_w) / 2 - max_shift, (w - new_w) / 2 + max_shift + 1)
         image = image[top: top + new_h,
