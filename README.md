@@ -21,32 +21,67 @@ To run an interactive shell:
 
 ### Analysis Task
 
-Two folder are available, one for the classification comparison with the results in the appendix and another one for the regression comparison of the analysis part in the benchmark section.
+In the analysis part, two folder are available, one for the classification comparison with the results in the appendix and another one for the regression comparison in the benchmark section (section 5.1).
 
 First, the path to the dataset must be correctly initialized in the config.py file in analysis/regression and analysis/classification, the variable DATA_DIR must lead to the dataset with the folders images/, metadata/ and the file metadata.json.
 
-Then, to run the regression code :
+To run the code for regression or classification :
+```bash
+python3 train.py --model_name resnet18 --size 224 --cropped True --device 0
 ```
+
+Replace the arguments with your desired values:
+
+- `--device`: The index of the GPU device to use (0 by default) (e.g. number between 0 and the number of devices in your GPU, run ```nvidia-smi``` for more infos).
+- `--size`: Input image size (e.g., 512).
+- `--cropped`: Whether to use cropped images (True or False).
+
+The train.py files are the entry points of the code. And then it basically follows the PytorchLightning workflow :
+https://lightning.ai/docs/pytorch/stable/starter/introduction.html
+
+#### Regression
+More specifically to run the regression code :
+```bash
 cd analysis/regression
 python3 train.py --model_name resnet18 --labels wind --size 224 --cropped True --device 0
 ```
-Arguments can be changed to have one of the results of the tables 2 and 3 in the paper.
+In this case more arguments can be changed :
+- `--model_name`: The architecture of the model (e.g., "resnet18", "resnet50").
+- `--label`: The target label for regression (e.g., "wind", "pressure").
+
+By changing the arguments you can obtain the results of the tables 2 and 3 in the paper.
+
 A pipeline is also provided which trains all the benchmarks in a row:
-```
+```bash
 cd analysis/regression
 python3 pipeline.py --device 0
 ```
 
+#### Classification
 To run the classification code :
-```
+```bash
 cd analysis/classification
 python3 train.py --model_name vgg --size 224 --cropped True --device 0
 ```
+In this case, the model_name possibilities are different :
+- `--model_name`: The architecture of the model (e.g., "resnet18", "vgg", "vit").
+
 Same as above, a pipeline in the classification folder launch all the training of the classification benchmarks in a row:
-```
+```bash
 cd analysis/classification
 python3 pipeline.py --device 0
 ```
+
+#### Results visualisation
+The results are saved in a /analysis/[classification,regression]/results/
+
+Folders with names depending of the arguments are created after a training and it creates different version after a few tries. It is managed by the pytorch_lightning.loggers TensorboardLogger : https://lightning.ai/docs/pytorch/stable/extensions/generated/lightning.pytorch.loggers.TensorBoardLogger.html#tensorboardlogger
+
+To visualize the results you can launch the command 
+```bash
+tensorboard --logdir /results/[training_name]/version_X/
+```
+And then open the local link given in a browser.
 
 
 ### Forecasting
