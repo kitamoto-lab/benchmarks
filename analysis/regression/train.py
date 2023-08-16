@@ -57,9 +57,8 @@ def train(hparam):
     hparam = custom_parse_args(hparam)
 
     logger_name = hparam.labels + "_" + hparam.model_name + "_" + str(hparam.size[0])
-    # if hparam.cropped: logger_name += "_cropped"
-    # else : logger_name += "_no-crop"
-    logger_name += "_data_augmentation"
+    if hparam.cropped: logger_name += "_cropped"
+    else : logger_name += "_no-crop"
 
     logger = TensorBoardLogger(
         save_dir="results",
@@ -87,7 +86,6 @@ def train(hparam):
         'DEVICES': hparam.device, 
         'DATA_DIR': config.DATA_DIR, 
         'MODEL_NAME': hparam.model_name,
-        "COMMENT": "data augmentation, random_key=3, LR=0.0005",
         # "Scheduler": "Start from 0.001 and divide by 10 every 15epochs"
         })
 

@@ -7,8 +7,6 @@ from torchvision.transforms.functional import center_crop
 from pathlib import Path
 import numpy as np
 
-from CustomDataset import CustomDataset
-
 from pyphoon2.DigitalTyphoonDataset import DigitalTyphoonDataset
 
 
@@ -36,7 +34,7 @@ class TyphoonDataModule(pl.LightningDataModule):
         data_path = Path(dataroot)
         self.images_path = str(data_path / "image") + "/"
         self.track_path = str(data_path / "metadata") + "/"
-        self.metadata_path = str("/app/metadata.json")
+        self.metadata_path = str(data_path / "metadata.json")
         self.load_data = load_data
         self.split_by = split_by
         self.labels = labels
@@ -66,9 +64,6 @@ class TyphoonDataModule(pl.LightningDataModule):
         self.train_set, self.val_set, _ = dataset.random_split(
             self.dataset_split, split_by=self.split_by, generator=generator1
         )
-
-        self.train_set = CustomDataset(self.train_set, data_aug=True)
-        self.val_set = CustomDataset(self.val_set, data_aug=False)
 
     def train_dataloader(self):
         return DataLoader(
