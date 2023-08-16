@@ -18,4 +18,4 @@ NUM_CLASSES       = 5
 # Computation parameters
 ACCELERATOR       = 'gpu' if torch.cuda.is_available() else 'cpu'
 DEVICES           = 0 # Overwritten if device argument is given
-DATA_DIR          = '/dataset/typhoon/WP/'
+DATA_DIR          = '/data/'

@@ -1,10 +1,10 @@
 import torch
 
 # Training Hyperparameters
-LEARNING_RATE     = 0.0005
+LEARNING_RATE     = 0.0001
 BATCH_SIZE        = 16
 NUM_WORKERS       = 24
-MAX_EPOCHS        = 150
+MAX_EPOCHS        = 50
 
 # Dataset parameters
 WEIGHTS           = "DEFAULT"
@@ -19,4 +19,4 @@ NUM_CLASSES       = 1
 # Computation parameters
 ACCELERATOR       = 'gpu' if torch.cuda.is_available() else 'cpu'
 DEVICES           = 0 # Overwritten if device argument is given
-DATA_DIR          = '/dataset/'
+DATA_DIR          = '/data/'

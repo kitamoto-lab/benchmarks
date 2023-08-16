@@ -106,7 +106,7 @@ def train(hparam):
         model_name = hparam.model_name
     )
     # regression_model = regression_model.load_from_checkpoint("/app/neurips2023-benchmarks/analysis/regression/results/wind_resnet50_512_data_augmentation/version_9/checkpoints/model_epoch=32.ckpt")
-    
+
     # Callback for model checkpoint
     checkpoint_callback = ModelCheckpoint(
         dirpath= logger.save_dir + '/' + logger.name + '/version_%d/checkpoints/' % logger.version,

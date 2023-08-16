@@ -86,6 +86,7 @@ class TyphoonDataModule(pl.LightningDataModule):
         )
 
     def transform_func(self, image_batch):
+        """transform function applied on the images for pre-processing"""
         image_batch = np.clip(
             image_batch, self.standardize_range[0], self.standardize_range[1]
         )
